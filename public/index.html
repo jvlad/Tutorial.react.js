@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8">
     <title>React Tutorial</title>
-    <!-- Not present in the tutorial. Just for basic styling. -->
     <link rel="stylesheet"
           href="css/base.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.1.0/react.js"></script>
@@ -15,7 +14,6 @@
 <body>
 <div id="content"></div>
 <script type="text/babel">
-    // todo https://facebook.github.io/react/docs/tutorial.html#adding-new-comments
     var CommentBox = React.createClass({
         loadCommentFromServer: function () {
             $.ajax({
@@ -36,10 +34,10 @@
         },
 
         handleCommentSubmit: function (comment) {
-            var comments = this.state.data;
+            var previouslyDownloadedComments = this.state.data;
             comment.id = "tempID=" + Date.now();
-            var newComments = comments.concat([comment]);
-            this.setState({data: newComments});
+            var instantlyUpdatedComments = previouslyDownloadedComments.concat([comment]);
+            this.setState({data: instantlyUpdatedComments});
             $.ajax({
                 url: this.props.url,
                 dataType: 'json',
@@ -49,7 +47,7 @@
                     this.setState({data: data});
                 }.bind(this),
                 error: function (xhr, status, err) {
-                    this.setState({data: comments});
+                    this.setState({data: previouslyDownloadedComments});
                     console.error(this.props.url, status, err.toString());
                 }.bind(this)
             })
@@ -62,9 +60,10 @@
 
         render: function () {
             return (<div className="commentBox">
-                        <h1>Comments:</h1>
-                        <CommentList data={this.state.data}/>
+                        <h2>Add Comment:</h2>
                         <CommentForm onCommentSubmit={this.handleCommentSubmit}/>
+                        <h2>Comments:</h2>
+                        <CommentList data={this.state.data}/>
                     </div>
             );
         }
@@ -72,7 +71,9 @@
 
     var CommentList = React.createClass({
         render: function () {
-            var commentNodes = this.props.data.map(function (comment) {
+            var commentList = this.props.data;
+            var reversedCommentList = commentList.reverse();
+            var commentNodes = reversedCommentList.map(function (comment) {
                 return (<Comment author={comment.author}
                                  key={comment.id}>
                             {comment.text}
@@ -97,9 +98,9 @@
         render: function () {
             var md = new Remarkable();
             return (<div>
-                        <h2 className="commentAuthor">
+                        <h3 className="commentAuthor">
                             {this.props.author}
-                        </h2>
+                        </h3>
                         <span dangerouslySetInnerHTML={this.rawMarkup()}/>
                     </div>
             );
@@ -120,13 +121,13 @@
         },
 
         handleSubmit: function (e) {
-            e.preventDefault()
-            var author = this.state.author.trim()
-            var text = this.state.text.trim()
+            e.preventDefault();
+            var author = this.state.author.trim();
+            var text = this.state.text.trim();
             if (!text || !author) {
                 return;
             }
-            this.props.onCommentSubmit({author, text})
+            this.props.onCommentSubmit({author, text});
             this.setState({author: "", text: ""})
         },
 
